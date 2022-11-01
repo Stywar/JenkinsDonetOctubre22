@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: service-aforo255
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service-aforo255
+  template:
+    metadata:
+      labels:
+        app: service-aforo255
+    spec:
+      containers:
+      - name: service-aforo255
+        image: antony0618/servicenet5:#{Build.BuildId}#
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: service-aforo255
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
