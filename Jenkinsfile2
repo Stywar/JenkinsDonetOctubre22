@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+     
+       stage('SCM') {
+            steps {
+               git branch: 'master', url: 'https://github.com/Stywar/JenkinsDonetOctubre22'
+            }
+        }
+     
+        stage ("Docker Build") {
+           
+           steps{
+             // docker login 
+             // bat(script: 'docker login --username xxxxxxx --password xxxxxxxxxx' , returnStdout:true);
+             bat(script: 'docker build -t antony0618/servicenet6 .' , returnStdout:true);
+             bat(script: 'docker push antony0618/servicenet6' , returnStdout:true);  
+           }
+       }
+       
+       
+       stage ("AKS DEPLOY") {
+           
+           steps{
+             bat (script:'az login --service-principal --username 60445a5a-4c7d-404e-96a0-0d5c83c4978f --password UzR8Q~h1tmIL.wHkJPg_UTaB9_LBK5O4Etf8KcRU --tenant 74343d69-5375-4c7a-8cc9-08986488c964',returnStdout: true);
+             bat (script: 'az container restart --name msaccount --resource-group Devops',returnStdout: true);
+             bat(script: 'az aks get-credentials --resource-group Devops --name devops_jenkisabril23 & kubectl config get-contexts --kubeconfig=%KUBE_PATH_CONFIG%', returnStdout: true); 
+             bat(script: 'kubectl config use-context devops_jenkisabril23 --kubeconfig=%KUBE_PATH_CONFIG%', returnStdout: true);
+             bat(script: 'kubectl apply -f k8s.yml --kubeconfig=%KUBE_PATH_CONFIG%', returnStdout: true);
+             bat(script: 'kubectl rollout restart deployment app-deployment --kubeconfig=%KUBE_PATH_CONFIG%', returnStdout: true);
+               
+           }
+       }
+     
+    }
+}
